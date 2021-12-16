@@ -42,7 +42,7 @@ class Inner_maximize_selector:
         
         for _ in range(self.num_repeats):
             x.requires_grad_()
-            logits = model(x)[0]
+            logits = model(x)
             loss = self.xent(logits, targets)
             loss.backward()
             grads = x.grad.data
@@ -57,7 +57,7 @@ class Inner_maximize_selector:
         
         for _ in range(self.num_repeats):
             x.requires_grad_()
-            logits = model(x)[0]
+            logits = model(x)
             loss = self.xent(logits, targets)
             loss.backward()
             grads = x.grad.data
@@ -74,7 +74,7 @@ class Inner_maximize_selector:
         
         for _ in range(self.num_repeats):
             x.requires_grad_()
-            logits = model(x)[0]
+            logits = model(x)
             probs = torch.softmax(logits, dim=1)
             wrong_probs = probs[class_index!=targets[:,None]].view(x.size(0),self.num_classes-1)
             correct_probs = probs[class_index==targets[:,None]]
@@ -95,9 +95,9 @@ class Inner_maximize_selector:
         
         for _ in range(self.num_repeats):
             x.requires_grad_()
-            logits = model(x)[0]
+            logits = model(x)
             loss = torch.sum(self.kl(F.log_softmax(logits, dim=1),
-                                     F.softmax(model(inputs)[0], dim=1)))/x.size(0)
+                                     F.softmax(model(inputs), dim=1)))/x.size(0)
             loss.backward()
             grads = x.grad.data
             x = x.detach() + self.alpha*torch.sign(grads).detach()
@@ -111,8 +111,8 @@ class Inner_maximize_selector:
         
         epsilon = self.epsilon/self.num_repeats
         for i in range(self.num_repeats):
-            logits_nat = model(inputs)[0]
-            logits_adv = model(x)[0]
+            logits_nat = model(inputs)
+            logits_adv = model(x)
             loss = self.xent(logits_adv, targets) + self.lam*torch.sum((logits_adv.softmax(dim=1) - logits_nat.softmax(dim=1))**2)/x.size(0)
             loss.backward()
             grads = delta.grad.data

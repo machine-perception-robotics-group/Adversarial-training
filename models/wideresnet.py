@@ -81,7 +81,7 @@ class WideResNet(nn.Module):
         h = self.relu(self.bn1(h))
         h = F.avg_pool2d(h, 8)
         h = h.view(-1, self.nChannels)
-        return self.fc(h)#, h
+        return self.fc(h)
 
 def wrn34_10(num_classes=10):
     return WideResNet(depth=34, num_classes=num_classes, widen_factor=10, dropRate=0.0)

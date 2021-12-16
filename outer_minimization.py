@@ -77,7 +77,7 @@ class Outer_minimize_selector:
 
     def standard_at(self, model, inputs, targets, optimizer):
         x_nat, x_adv = torch.chunk(inputs, 2, dim=0)
-        logits = model(x_adv)[0]
+        logits = model(x_adv)
         loss = self.xent(logits, targets)
         optimizer.zero_grad()
         loss.backward()
@@ -87,7 +87,7 @@ class Outer_minimize_selector:
         return loss.item(), num_correct
     
     def kernel_trick(self, model, inputs, targets, optimizer):
-        logits = model(inputs)[0]
+        logits = model(inputs)
         loss = self.xent(logits, targets)
         optimizer.zero_grad()
         loss.backward()
@@ -98,8 +98,8 @@ class Outer_minimize_selector:
     
     def alp(self, model, inputs, targets, optimizer):
         x_nat, x_adv = torch.chunk(inputs, 2, dim=0)
-        logits_nat = model(x_nat)[0]
-        logits_adv = model(x_adv)[0]
+        logits_nat = model(x_nat)
+        logits_adv = model(x_adv)
         loss_xent = self.xent(logits_adv, targets)
         loss_lp = torch.sqrt(torch.sum(torch.pow(logits_nat - logits_adv, 2)))/x_nat.size(0)
         loss = loss_xent + self.lam*loss_lp
@@ -111,7 +111,7 @@ class Outer_minimize_selector:
         return loss.item(), num_correct
     
     def clp(self, model, inputs, targets, optimizer):
-        logits = model(inputs)[0]
+        logits = model(inputs)
         loss_xent = self.xent(logits, targets)
         logits1, logits2 = torch.chunk(logits, 2, dim=0)
         loss_lp = torch.sqrt(torch.sum((logits1 - logits2)**2))/inputs.size(0)
@@ -136,7 +136,7 @@ class Outer_minimize_selector:
         y_adv = onehot * self.lam2 + (onehot - 1) * ((self.lam2 - 1)/(self.num_classes - 1))
         y = yw * y_nat + (1 - yw) * y_adv
         
-        logits = model(x)[0]
+        logits = model(x)
         loss = torch.sum(-y * F.log_softmax(logits, dim=1))/x.size(0)
         
         optimizer.zero_grad()
@@ -148,11 +148,11 @@ class Outer_minimize_selector:
     
     def mail(self, model, inputs, targets, optimizer, **kwargs):
         x_nat, x_adv = torch.chunk(inputs, 2, dim=0)
-        logits = model(x_adv)[0]
+        logits = model(x_adv)
         if kwargs.get('epoch') > self.warm_up:
             class_index = torch.arange(self.num_classes)[None,:].repeat(x_adv.size(0),1).cuda()
             if self.pm_type == 'nat':
-                probs = torch.softmax(model(x_nat)[0], dim=1)
+                probs = torch.softmax(model(x_nat), dim=1)
             elif self.pm_type == 'adv':
                 probs = torch.softmax(logits, dim=1)
                 
@@ -175,7 +175,7 @@ class Outer_minimize_selector:
     
     def gairat(self, model, inputs, targets, optimizer, **kwargs):
         x_nat, x_adv = torch.chunk(inputs, 2, dim=0)
-        logits = model(x_adv)[0]
+        logits = model(x_adv)
         kappa = kwargs.get('kappa')
         if kwargs.get('epoch') > self.warm_up:
             s = (1 + self.tanh(self.lam + 5*(1 - 2*kappa/self.num_repeats)))/2
@@ -194,7 +194,7 @@ class Outer_minimize_selector:
     
     def wmmr(self, model, inputs, targets, optimizer):
         x_nat, x_adv = torch.chunk(inputs, 2, dim=0)
-        logits = model(x_adv)[0]
+        logits = model(x_adv)
         
         class_index = torch.arange(self.num_classes)[None,:].repeat(x_adv.size(0),1).cuda()
         wrong_probs = logits.softmax(dim=1)[class_index!=targets[:,None]].view(x_adv.size(0), self.num_classes-1)
@@ -212,8 +212,8 @@ class Outer_minimize_selector:
     
     def gat(self, model, inputs, targets, optimizer):
         x_nat, x_adv = torch.chunk(inputs, 2, dim=0)
-        logits_nat = model(x_nat)[0]
-        logits_adv = model(x_adv)[0]
+        logits_nat = model(x_nat)
+        logits_adv = model(x_adv)
         
         xent_loss = self.xent(logits_nat, targets)
         reg = torch.sum((logits_adv.softmax(dim=1) - logits_nat.softmax(dim=1))**2)/x_nat.size(0)
@@ -228,8 +228,8 @@ class Outer_minimize_selector:
         
     def trades(self, model, inputs, targets, optimizer):
         x_nat, x_adv = torch.chunk(inputs, 2, dim=0)
-        logits_nat = model(x_nat)[0]
-        logits_adv = model(x_adv)[0]
+        logits_nat = model(x_nat)
+        logits_adv = model(x_adv)
         
         xent_loss = self.xent(logits_nat, targets)
         kl_loss = torch.sum(self.kl(F.log_softmax(logits_adv, dim=1),
@@ -245,8 +245,8 @@ class Outer_minimize_selector:
     
     def mart(self, model, inputs, targets, optimizer):
         x_nat, x_adv = torch.chunk(inputs, 2, dim=0)
-        logits_nat = model(x_nat)[0]
-        logits_adv = model(x_adv)[0]
+        logits_nat = model(x_nat)
+        logits_adv = model(x_adv)
         
         class_index = torch.arange(self.num_classes)[None,:].repeat(x_adv.size(0),1).cuda()
         log_softmax_gt = F.log_softmax(logits_adv, dim=1)[class_index==targets[:,None]]
@@ -265,7 +265,7 @@ class Outer_minimize_selector:
     
     def prob_compact(self, model, inputs, targets, optimizer, **kwargs):
         x_nat, x_adv = torch.chunk(inputs, 2, dim=0)
-        logits = model(x_adv)[0]
+        logits = model(x_adv)
         
         if kwargs.get('epoch') > self.warm_up:
             probs = torch.softmax(logits, dim=1)
@@ -328,8 +328,8 @@ class Outer_minimize_selector:
     def lbgat(self, model_nat, inputs, targets, optimizer, **kwargs):
         model_rob = kwargs.get('model_rob')
         x_nat, x_adv = torch.chunk(inputs, 2, dim=0)
-        logits_nat = model_nat(x_nat)[0]
-        logits_adv = model_rob(x_adv)[0]
+        logits_nat = model_nat(x_nat)
+        logits_adv = model_rob(x_adv)
         
         loss = 0.5*self.mse(logits_adv, logits_nat) + self.lam*self.xent(logits_nat, targets)
         
