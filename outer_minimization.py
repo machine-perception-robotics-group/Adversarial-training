@@ -50,6 +50,8 @@ class Outer_minimize_selector:
             return self.alp(model, inputs, targets, optimizer)
         elif self.training_type == 'avmixup':
             return self.avmixup(model, inputs, targets, optimizer)
+        elif self.training_type == 'clp':
+            return self.clp(model, inputs, targets, optimizer)
         elif self.training_type == 'mail':
             return self.mail(model, inputs, targets, optimizer, epoch=kwargs.get('epoch'))
         elif self.training_type == 'gairat':
@@ -109,17 +111,16 @@ class Outer_minimize_selector:
         return loss.item(), num_correct
     
     def clp(self, model, inputs, targets, optimizer):
-        x_nat, x_adv = torch.chunk(inputs, 2, dim=0)
-        logits = model(x_nat)[0]
+        logits = model(inputs)[0]
         loss_xent = self.xent(logits, targets)
         logits1, logits2 = torch.chunk(logits, 2, dim=0)
-        loss_lp = torch.sum(torch.sqrt((logits1 - logits2)**2))*(2/x_nat.size(0))
+        loss_lp = torch.sqrt(torch.sum((logits1 - logits2)**2))/inputs.size(0)
         loss = loss_xent + self.lam*loss_lp
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
         
-        num_correct = logits_adv.softmax(dim=1).argmax(dim=1).eq(targets).sum().item()
+        num_correct = logits.softmax(dim=1).argmax(dim=1).eq(targets).sum().item()
         return loss.item(), num_correct
     
     def avmixup(self, model, inputs, targets, optimizer):

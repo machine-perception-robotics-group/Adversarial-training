@@ -31,7 +31,7 @@ class Inner_maximize_selector:
              return self.trades_pgd(model, inputs, targets)
         elif self.training_type == 'gat':
              return self.gama(model, inputs, targets)
-        elif self.training_type == 'kernel_trick':
+        elif self.training_type == 'kernel_trick' or self.training_type == 'clp':
             return None
         else:
             assert 0, 'Error: %d is not supported.'

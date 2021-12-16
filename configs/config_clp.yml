@@ -1,15 +1,15 @@
 training:
     # training setting
     dataset: 'cifar10'
-    model_type: 'wrn34-10'
+    model_type: 'resnet18'
     total_epochs: 200
     batch_size: 128
     lr: 0.1
     momentum: 0.9
-    weight_decay: 0.0002
+    weight_decay: 0.0004
     scheduler:
         - 100
-        - 150
+        - 175
     num_classes: 10
     lower: 0
     upper: 1
@@ -18,11 +18,11 @@ training:
     epsilon: 8
     num_repeats: 10
     tau: None
-    lam: None
+    lam: 0.5
     lambda_av:
-        - 1.0
-        - 0.1
-    gamma: 2
+        - None
+        - None
+    gamma: None
     beta: None
     pm_type: None
     warm_up: None

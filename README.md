@@ -5,6 +5,7 @@ We list avarable architectures bellow:
 |network|# of layers|
 | :---: | :---: |
 |ResNet|18/34/50/101/152|
+|WideResNet| -- |
 |VGG|11/13/16/19 (w/ bn or w/o bn)|
 |LeNet|5|
 |RBF CNNs|3-convs + 1-fc|
@@ -18,6 +19,7 @@ We prepare several type of the adversarial training, but most of methods basical
 
 - [x] Adversarial logits paring (ALP)<br>
 - [x] Adversarial vertex mixup (AVmixup)<br>
+- [x] Clean logits paring (CLP)<br>
 - [ ] Friendly adversarial training (FAT)<br>
 - [x] Guided-awere instance-reweighting adversarial training (GAIRAT)<br>
 - [x] Guided adversarial training (GAT)<br>
@@ -32,11 +34,8 @@ We prepare several type of the adversarial training, but most of methods basical
 - [x] Tadeoff-inspired adversarial defense via surrogate-loss minimization (TRADES)<br>
 - [x] Weighted minimax risk (WMMR)
 
-### Simple description for each defense method
-
-
 ## Evaluation metrics for the clusturing of low dimensional feature space
-* Sihouette coefficient (Sil.)
+* Silhouette coefficient (Sil.)
 * Calkins-Harabasz index (Cal.)
 * Mutual information score (MI)
 * Homogeneity score (Homo.)

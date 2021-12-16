@@ -13,7 +13,7 @@ def trainer(epoch, model_nat, model_rob, optimizer, dataloader, inner, outer, op
         inputs, targets = inputs.cuda(), targets.cuda()
         batch = inputs.size(0)
         kappa = None
-        if inner is True:
+        if inner:
             ## Inner maximization
             if model_rob is not None:
                 items = inner(model_rob, inputs, targets)

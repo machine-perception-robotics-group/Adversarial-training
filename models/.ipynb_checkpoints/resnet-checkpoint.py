@@ -132,7 +132,7 @@ class ResNet(nn.Module):
         
         h = self.fc1(x)
 
-        return h, x
+        return h#, x
 
 
 def resnet18(pretrained=False, **kwargs):

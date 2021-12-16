@@ -23,7 +23,7 @@ if __name__ == '__main__':
     parser.add_argument('--gpu', type=str, default='0')
     parser.add_argument('--checkpoint', type=str, default='./checkpoint')
     parser.add_argument('--training_type', type=str,
-                        choices=['standard', 'alp', 'avmixup', 'mail', 'gairat', 'prototype',
+                        choices=['standard', 'alp', 'avmixup', 'clp', 'mail', 'gairat', 'prototype',
                                  'wmmr', 'trades', 'gat', 'mart', 'prob_compact', 'lbgat', 'kernel_trick'])
     args = parser.parse_args()
     
