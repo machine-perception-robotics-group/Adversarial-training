@@ -2,8 +2,11 @@ import os
 import sys
 sys.path.append('..')
 import  numpy as np
+from tqdm import tqdm
 from sklearn.metrics import silhouette_score, calinski_harabasz_score, mutual_info_score, homogeneity_score, completeness_score
 from bhtsne import tsne
+import pandas as pd
+import seaborn as sns
 import matplotlib.pyplot as plt
 
 import torch
@@ -283,3 +286,114 @@ class Eval_cluster:
         plt.scatter(xcoords, ycoords, color=colorlist, s=plot_size)
         plt.savefig((os.path.join(save_name, 't-SNE-scatter.png')))
         plt.savefig((os.path.join(save_name, 't-SNE-scatter.pdf')))
+        
+#################################################
+# Computing confision matrix
+#   - standard confision matrix
+#   - adversarial confision matrix
+#################################################
+class Confision_matrix:
+    def __init__(self, model, dataloader, epsilon, alpha, num_classes, classes=None):
+        self.model = model
+        self.dataloader = dataloader
+        self.epsilon = epsilon
+        self.alpha = alpha
+        self.num_classes = num_classes
+        
+        if classes is not None:
+            self.classes = classes
+        else:
+            self.classes = np.arange(num_classes)
+        
+    def _make_heatmap(self, X, save_dir='figures', save_name='standard_conf_mat', title=None):
+        os.makedirs(save_dir, exist_ok=True)
+        data = pd.DataFrame(data=X.data.cpu().numpy(), index=self.classes, columns=self.classes)
+        plt.figure(figsize=(12, 10))
+        sns.heatmap(data, square=True, cbar=True, annot=True, cmap='turbo')
+        
+        if title is not None:
+            plt.title(title)
+        plt.ylabel('Ground truth', size=13)
+        plt.xlabel('Predicted label', size=13)
+        plt.savefig(os.path.join(save_dir, save_name+'.png'))
+        plt.savefig(os.path.join(save_dir, save_name+'.pdf'))
+        
+    def standard(self):
+        conf_mat = torch.zeros(self.num_classes, self.num_classes).cuda()
+        for (inputs, targets) in self.dataloader:
+            inputs, targets = inputs.cuda(), targets
+            
+            with torch.no_grad():
+                logits = self.model(inputs)
+            pred_idx = logits.softmax(dim=1).argmax(dim=1)
+            conf_mat[targets, pred_idx] += 1
+            
+        print('Standard confision matrix')
+        print(conf_mat.data.cpu())
+        self._make_heatmap(conf_mat, save_name='standard_conf_mat', title='standard confision matrix')
+        
+    def _fgsm_attk(self, inputs, t, is_noise=True, norm='linf'):
+        xent = nn.CrossEntropyLoss()
+        if is_noise:
+            noise = torch.FloatTensor(inputs.shape).uniform_(-self.epsilon, self.epsilon).cuda()
+            x = torch.clamp(inputs+noise, min=0, max=1)
+        else:
+            x = inputs.clone()
+        x.requires_grad_()
+        logits = self.model(x)
+        loss = xent(logits, t)
+        loss.backward()
+        grads = x.grad.data
+        if norm == 'l2':
+            norm_grads = grads/torch.norm(grads, p=2)
+            x = inputs.detach() + self.epsilon*norm_grads.detach()
+        elif norm == 'linf':
+            x = inputs.detach() + self.epsilon*torch.sign(grads).detach()
+        return x.clamp(min=0, max=1)
+    
+    def _pgd_attk(self, inputs, t, n_steps, is_noise=True, norm='linf'):
+        xent = nn.CrossEntropyLoss()
+        if is_noise:
+            noise = torch.FloatTensor(inputs.shape).uniform_(-self.epsilon, self.epsilon).cuda()
+            x = torch.clamp(inputs+noise, min=0, max=1)
+        else:
+            x = inputs.clone()
+        
+        for _ in range(n_steps):
+            x.requires_grad_()
+            logits = self.model(x)
+            loss = xent(logits, t)
+            loss.backward()
+            grads = x.grad.data
+            if norm == 'l2':
+                norm_grads = grads/torch.norm(grads, p=2)
+                x = x.detach() + self.epsilon*norm_grads.detach()
+            elif norm == 'linf':
+                x = x.detach() + self.alpha*torch.sign(grads).detach()
+                x = torch.min(torch.max(x, inputs-self.epsilon), inputs+self.epsilon)
+        return x.clamp(min=0, max=1)
+        
+    def adversarial(self, attk='pgd', norm='linf'):
+        conf_mat = torch.zeros(self.num_classes, self.num_classes).cuda()
+        for (inputs, targets) in tqdm(self.dataloader):
+            inputs, targets = inputs.cuda(), targets.cuda()
+            
+            if attk == 'fgsm':
+                x = self._fgsm_attk(inputs, targets, is_noise=True, norm=norm)
+            elif attk == 'pgd':
+                x = self._pgd_attk(inputs, targets, n_steps=10, is_noise=True, norm=norm)
+            else:
+                assert 0, '%s is not supported.'
+            
+            with torch.no_grad():
+                logits = self.model(x)
+            pred_idx = logits.softmax(dim=1).argmax(dim=1)
+            conf_mat[targets, pred_idx] += 1
+            
+        print('Adversarial confision matrix (%s)' % attk)
+        print(conf_mat.data.cpu())
+        self._make_heatmap(conf_mat, save_name='standard_conf_mat_%s' % attk, 
+                           title='adversarial confision matrix (%s)' % attk)
+        
+        
+        

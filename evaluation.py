@@ -22,7 +22,7 @@ def validation(model, dataloader, epsilon, alpha, num_repeats, lower, upper):
         for _ in range(num_repeats):
             x.requires_grad_()
             with torch.enable_grad():
-                logits = model(x)[0]
+                logits = model(x)
             loss = xent(logits, targets)
             loss.backward()
             grads = x.grad.data
@@ -30,8 +30,8 @@ def validation(model, dataloader, epsilon, alpha, num_repeats, lower, upper):
             x = torch.min(torch.max(x, inputs-epsilon), inputs+epsilon).clamp(min=lower, max=upper)
         
         with torch.no_grad():
-            logits_nat = model(inputs)[0]
-            logits_adv = model(x)[0]
+            logits_nat = model(inputs)
+            logits_adv = model(x)
             
         total_correct_nat += logits_nat.softmax(dim=1).argmax(dim=1).eq(targets).sum().item()
         total_correct_rob += logits_adv.softmax(dim=1).argmax(dim=1).eq(targets).sum().item()
@@ -53,7 +53,7 @@ def standard_acc(model, dataloader):
         inputs, targets = inputs.cuda(), targets.cuda()
         
         with torch.no_grad():
-            logits = model(inputs)[0]
+            logits = model(inputs)
             
         total_correct += logits.softmax(dim=1).argmax(dim=1).eq(targets).sum().item()
     avg_acc = total_correct/len(dataloader.dataset)
@@ -72,7 +72,7 @@ def robustness_fgsm(model, dataloader, epsilon, lower, upper, is_noise=True, nor
             
         x.requires_grad_()
         with torch.enable_grad():
-            logits = model(x)[0]
+            logits = model(x)
         loss = xent(logits, targets)
         loss.backward()
         grads = x.grad.data
@@ -84,7 +84,7 @@ def robustness_fgsm(model, dataloader, epsilon, lower, upper, is_noise=True, nor
         x = torch.clamp(x, min=0, max=1)
         
         with torch.no_grad():
-            logits = model(x)[0]
+            logits = model(x)
             
         total_correct += logits.softmax(dim=1).argmax(dim=1).eq(targets).sum().item()
     avg_acc = total_correct/len(dataloader.dataset)
@@ -104,7 +104,7 @@ def robustness_pgd(model, dataloader, epsilon, alpha, num_repeats, lower, upper,
         for _ in range(num_repeats):
             x.requires_grad_()
             with torch.enable_grad():
-                logits = model(x)[0]
+                logits = model(x)
             loss = xent(logits, targets)
             loss.backward()
             grads = x.grad.data
@@ -117,7 +117,7 @@ def robustness_pgd(model, dataloader, epsilon, alpha, num_repeats, lower, upper,
             x = torch.clamp(x, min=0, max=1)
         
         with torch.no_grad():
-            logits = model(x)[0]
+            logits = model(x)
             
         total_correct += logits.softmax(dim=1).argmax(dim=1).eq(targets).sum().item()
     avg_acc = total_correct/len(dataloader.dataset)
@@ -137,7 +137,7 @@ def robustness_pgd_with_cw_loss(model, dataloader, epsilon, alpha, num_repeats, 
         for _ in range(num_repeats):
             x.requires_grad_()
             with torch.enable_grad():
-                logits = model(x)[0]
+                logits = model(x)
             loss = cw_loss(logits, targets)
             loss.backward()
             grads = x.grad.data
@@ -150,7 +150,7 @@ def robustness_pgd_with_cw_loss(model, dataloader, epsilon, alpha, num_repeats, 
             x = torch.clamp(x, min=0, max=1)
         
         with torch.no_grad():
-            logits = model(x)[0]
+            logits = model(x)
             
         total_correct += logits.softmax(dim=1).argmax(dim=1).eq(targets).sum().item()
     avg_acc = total_correct/len(dataloader.dataset)

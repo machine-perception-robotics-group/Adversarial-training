@@ -180,7 +180,7 @@ class Outer_minimize_selector:
         if kwargs.get('epoch') > self.warm_up:
             s = (1 + self.tanh(self.lam + 5*(1 - 2*kappa/self.num_repeats)))/2
             s = s/torch.sum(s)
-            class_index = torch.arange(self.num_classes)[None,:].repeat(x.size(0),1).cuda()
+            class_index = torch.arange(self.num_classes)[None,:].repeat(x_adv.size(0),1).cuda()
             loss = torch.sum(-s * torch.log_softmax(logits, dim=1)[class_index==targets[:,None]])/x_adv.size(0)
         else:
             loss = self.xent(logits, targets)
