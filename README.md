@@ -10,8 +10,6 @@ We list avarable architectures bellow:
 |LeNet|5|
 |RBF CNNs|3-convs + 1-fc|
 
-where RBF CNNs indicate the convolutional neural networks that assing Radial Basis Function (RBF) kearnel to hidden layers.
-
 * To Do: We will increase the avarable base network including state-of-the-art method.
 
 ## Defense methods
@@ -20,7 +18,7 @@ We prepare several type of the adversarial training, but most of methods basical
 - [x] Adversarial logits paring (ALP): H. Kannan, et al., arXiv, 2018. [paper](https://arxiv.org/abs/1803.06373)<br>
 - [x] Adversarial vertex mixup (AVmixup)S. Lee, et al., CVPR, 2020. [paper](https://arxiv.org/abs/2003.02484)<br>
 - [x] Clean logits paring (CLP): H. Kannan et al., arXiv, 2018. [paper](https://arxiv.org/abs/1803.06373)<br>
-- [ ] Friendly adversarial training (FAT)<br>
+- [x] Friendly adversarial training (FAT)[paper](https://arxiv.org/abs/2002.11242)<br>
 - [x] Guided-awere instance-reweighting adversarial training (GAIRAT): J. Zhang, et al., ICLR, 2021. [paper](https://arxiv.org/abs/2010.01736)<br>
 - [x] Guided adversarial training (GAT): G. Sriramanan et al., NeurIPS, 2020. [paper](https://arxiv.org/abs/2011.14969)<br>
 - [x] non-linearlity CNN with the kernel trick: S. A. Taghanaki, et al. CVPR, 2019. [paper](https://arxiv.org/abs/1903.01015)<br>
