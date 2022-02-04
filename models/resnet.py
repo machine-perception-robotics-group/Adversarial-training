@@ -66,7 +66,7 @@ class Bottleneck(nn.Module):
         return out
     
 class ResNet(nn.Module):
-    def __init__(self, block, layers, num_classes=10):
+    def __init__(self, block, layers, num_classes=10, use_pc=False):
         self.inplanes = 64
         super(ResNet, self).__init__()
         self.num_classes = num_classes
@@ -80,8 +80,12 @@ class ResNet(nn.Module):
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2, down_size=True)
         self.avgpool = nn.AvgPool2d(4)
         
-        self.fc1 = nn.Linear(512 * block.expansion, num_classes)
-        #self.fc2 = nn.Linear(256, num_classes)
+        self.use_pc = use_pc
+        if self.use_pc:
+            self.fc1 = nn.Linear(512 * block.expansion, 256)
+            self.fc2 = nn.Linear(256, num_classes)
+        else:
+            self.fc1 = nn.Linear(512 * block.expansion, num_classes)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -130,9 +134,13 @@ class ResNet(nn.Module):
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
         
-        h = self.fc1(x)
-
-        return h
+        if self.use_pc:
+            h = self.fc1(x)
+            out = self.fc2(h)
+            return out, h
+        else:
+            h = self.fc1(x)
+            return h
 
 
 def resnet18(pretrained=False, **kwargs):

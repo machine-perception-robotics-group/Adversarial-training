@@ -15,21 +15,21 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 from models import lenet, vgg, resnet, wideresnet, rbf_cnn
 
-def get_network(model_type, num_classes):
+def get_network(model_type, num_classes, use_pc=False, is_train=True):
     # ResNet-18/34/50/101/152
     if model_type == 'resnet18':
-        model = resnet.resnet18(num_classes=num_classes)
+        model = resnet.resnet18(num_classes=num_classes, use_pc=use_pc)
     elif model_type == 'resnet34':
-        model = resnet.resnet34(num_classes=num_classes)
+        model = resnet.resnet34(num_classes=num_classes, use_pc=use_pc)
     elif model_type == 'resnet50':
-        model = resnet.resnet50(num_classes=num_classes)
+        model = resnet.resnet50(num_classes=num_classes, use_pc=use_pc)
     elif model_type == 'resnet101':
-        model = resnet.resnet101(num_classes=num_classes)
+        model = resnet.resnet101(num_classes=num_classes, use_pc=use_pc)
     elif model_type == 'resnet152':
-        model = resnet.resnet152(num_classes=num_classes)
+        model = resnet.resnet152(num_classes=num_classes, use_pc=use_pc)
     # Wide ResNet34-10
     elif model_type == 'wrn34-10':
-        model = wideresnet.wrn34_10(num_classes=num_classes)
+        model = wideresnet.wrn34_10(num_classes=num_classes, use_pc=use_pc, is_train=is_train)
     # LeNet5
     elif model_type == 'lenet5':
         model = lenet.Lenet5(num_classes=num_classes)
@@ -320,13 +320,15 @@ class Confision_matrix:
         
     def standard(self):
         conf_mat = torch.zeros(self.num_classes, self.num_classes).cuda()
-        for (inputs, targets) in self.dataloader:
+        for (inputs, targets) in tqdm(self.dataloader):
             inputs, targets = inputs.cuda(), targets
             
             with torch.no_grad():
                 logits = self.model(inputs)
             pred_idx = logits.softmax(dim=1).argmax(dim=1)
-            conf_mat[targets, pred_idx] += 1
+            org_onehot = torch.eye(self.num_classes)[targets].cuda()
+            pre_onehot = torch.eye(self.num_classes)[pred_idx].cuda()
+            conf_mat += (pre_onehot.t()@org_onehot)
             
         print('Standard confision matrix')
         print(conf_mat.data.cpu())
@@ -388,7 +390,9 @@ class Confision_matrix:
             with torch.no_grad():
                 logits = self.model(x)
             pred_idx = logits.softmax(dim=1).argmax(dim=1)
-            conf_mat[targets, pred_idx] += 1
+            org_onehot = torch.eye(self.num_classes)[targets].cuda()
+            pre_onehot = torch.eye(self.num_classes)[pred_idx].cuda()
+            conf_mat += (pre_onehot.t()@org_onehot)
             
         print('Adversarial confision matrix (%s)' % attk)
         print(conf_mat.data.cpu())

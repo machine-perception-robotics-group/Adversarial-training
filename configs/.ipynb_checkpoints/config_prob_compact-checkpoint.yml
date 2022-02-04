@@ -1,15 +1,130 @@
-training:
+training_cifar10_vgg13:
     # training setting
+    # Dataset: CIFAR-10
+    # VGG-13
     dataset: 'cifar10'
-    model_type: 'resnet18'
+    model_type: 'vgg13'
+    optim_type: 'adam'
+    total_epochs: 300
+    batch_size: 256
+    lr: 0.01
+    momentum: None
+    weight_decay: None
+    scheduler:
+        - None
+        - None
+    num_classes: 10
+    lower: 0
+    upper: 1
+    
+    alpha: 2
+    epsilon: 8
+    num_repeats: 10
+    tau: None
+    lam: 0.05
+    lambda_av:
+        - None
+        - None
+    gamma: None
+    beta: None
+    pm_type: None
+    warm_up: 150
+    xi: 0.995
+    wc: None
+    wp: None
+    lr_pc: None
+    lr_center: None
+    
+training_cifar100_vgg13:
+    # training setting
+    # Dataset: CIFAR-100
+    # VGG-13
+    dataset: 'cifar100'
+    model_type: 'vgg13'
+    optim_type: 'adam'
+    total_epochs: 300
+    batch_size: 256
+    lr: 0.01
+    momentum: None
+    weight_decay: None
+    scheduler:
+        - None
+        - None
+    num_classes: 100
+    lower: 0
+    upper: 1
+    
+    alpha: 2
+    epsilon: 8
+    num_repeats: 10
+    tau: None
+    lam: 0.05
+    lambda_av:
+        - None
+        - None
+    gamma: None
+    beta: None
+    pm_type: None
+    warm_up: 150
+    xi: 0.995
+    wc: None
+    wp: None
+    lr_pc: None
+    lr_center: None
+    
+training_svhn_vgg13:
+    # training setting
+    # Dataset: SVHN
+    # VGG-13
+    dataset: 'svhn'
+    model_type: 'vgg13'
+    optim_type: 'adam'
+    total_epochs: 300
+    batch_size: 256
+    lr: 0.01
+    momentum: None
+    weight_decay: None
+    scheduler:
+        - None
+        - None
+    num_classes: 10
+    lower: 0
+    upper: 1
+    
+    alpha: 2
+    epsilon: 8
+    num_repeats: 10
+    tau: None
+    lam: 0.05
+    lambda_av:
+        - None
+        - None
+    gamma: None
+    beta: None
+    pm_type: None
+    warm_up: 150
+    xi: 0.995
+    wc: None
+    wp: None
+    lr_pc: None
+    lr_center: None
+    
+
+training_svhn_vgg13:
+    # training setting
+    # Dataset: MNIST
+    # LeNet-5
+    dataset: 'mnist'
+    model_type: 'lenet5'
+    optim_type: 'adam'
     total_epochs: 100
     batch_size: 256
     lr: 0.01
-    momentum: 0.9
-    weight_decay: 0.0004
+    momentum: None
+    weight_decay: None
     scheduler:
-        - 75
-        - 90
+        - None
+        - None
     num_classes: 10
     lower: 0
     upper: 1
@@ -31,5 +146,4 @@ training:
     wp: None
     lr_pc: None
     lr_center: None
-    
     

@@ -20,6 +20,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--seed_pytorch', type=int, default=np.random.randint(4294967295))
     parser.add_argument('--seed_numpy', type=int, default=np.random.randint(4294967295))
+    parser.add_argument('--load_param', type=str, default='training_cifar10_resnet18')
     parser.add_argument('--gpu', type=str, default='0')
     parser.add_argument('--checkpoint', type=str, default='./checkpoint')
     parser.add_argument('--training_type', type=str,
@@ -27,22 +28,21 @@ if __name__ == '__main__':
                                  'wmmr', 'trades', 'gat', 'mart', 'prob_compact', 'lbgat', 'kernel_trick'])
     args = parser.parse_args()
     
-    path_chekpoint = os.path.join(args.checkpoint, args.training_type)
     np.random.seed(args.seed_numpy)
     torch.manual_seed(args.seed_pytorch)
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
-    os.makedirs(path_chekpoint, exist_ok=True)
     
     #######################################
     # Load parameters
     #######################################
     yaml_path = './configs/config_%s.yml' % args.training_type
     with open(yaml_path) as yf:
-        configs = yaml.safe_load(yf.read())['training']
+        configs = yaml.safe_load(yf.read())[args.load_param]
     print(configs)
     
     dataset = configs['dataset']
     model_type = configs['model_type']
+    optim_type = configs['optim_type']
     total_epochs = configs['total_epochs']
     batch_size = configs['batch_size']
     lr = configs['lr']
@@ -72,6 +72,8 @@ if __name__ == '__main__':
         image_size = 28
     else:
         image_size = 32
+    path_chekpoint = os.path.join(args.checkpoint, args.training_type, dataset, model_type)
+    os.makedirs(path_chekpoint, exist_ok=True)
     #######################################
         
     train_dataset, test_dataloader = get_dataloader(dataset=dataset, batch_size=batch_size, image_size=image_size)
@@ -83,7 +85,13 @@ if __name__ == '__main__':
     valid_dataloader = DataLoader(valid_set, batch_size=1, shuffle=True, drop_last=False)
     
     model_nat = nn.DataParallel(get_network(model_type=model_type, num_classes=num_classes).cuda())
-    optimizer = optim.SGD(model_nat.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
+    if optim_type == 'm-sgd':
+        optimizer = optim.SGD(model_nat.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
+    elif optim_type == 'sgd':
+        optimizer = optim.SGD(model_nat.parameters(), lr=lr)
+    elif optim_type == 'adam':
+        optimizer = optim.Adam(model_nat.parameters(), lr=lr)
+
     model_rob = None
     center, pc = None, None
     optimizer_center, optimizer_pc = None, None
@@ -97,7 +105,8 @@ if __name__ == '__main__':
         optimizer_center = optim.SGD(center.parameters(), lr=lr_center)
         optimizer_pc = optim.SGD(pc.parameters(), lr=lr_pc)
     
-    adjust_learning_rate = lr_scheduler.MultiStepLR(optimizer, scheduler, gamma=0.1)
+    if None in scheduler:
+        adjust_learning_rate = lr_scheduler.MultiStepLR(optimizer, scheduler, gamma=0.1)
     
     inner_max = Inner_maximize_selector(training_type=args.training_type,
                                         alpha=alpha,
@@ -143,7 +152,10 @@ if __name__ == '__main__':
                             'best_acc_rob': best_acc_rob,
                             'optimizer': optimizer.state_dict(),
                             'torch_seed': args.seed_pytorch,
-                            'numpy_seed': args.seed_numpy}
+                            'numpy_seed': args.seed_numpy,
+                            'dataset': dataset,
+                            'model_type': model_type,
+                            'num_classes': num_classes}
         if args.training_type == 'lbgat':
             save_checkpoints['state_dict_rob'] = model_rob.state_dict()
         elif args.training_type == 'prototype':
@@ -154,6 +166,7 @@ if __name__ == '__main__':
         if is_best:
             print('Updating best model')
             torch.save(save_checkpoints, os.path.join(path_chekpoint, 'best_model'))
-        adjust_learning_rate.step()
+        if None in scheduler:
+            adjust_learning_rate.step()
     
     

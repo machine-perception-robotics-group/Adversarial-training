@@ -1,15 +1,52 @@
-training:
+training_cifar10_resnet18:
     # training setting
     dataset: 'cifar10'
     model_type: 'resnet18'
+    optim_type: 'm-sgd'
     total_epochs: 100
     batch_size: 128
     lr: 0.1
     momentum: 0.9
-    weight_decay: 0.0004
+    weight_decay: 0.0005
     scheduler:
         - 70
         - 85
+    num_classes: 10
+    lower: 0
+    upper: 1
+    
+    alpha: 2
+    epsilon: 8
+    num_repeats: 1
+    tau: None
+    lam: 10.0
+    lambda_av:
+        - None
+        - None
+    gamma: None
+    beta: None
+    pm_type: None
+    warm_up: None
+    xi: None
+    wc: None
+    wp: None
+    lr_pc: None
+    lr_center: None
+    
+training_cifar10_wrn34-10:
+    # training setting
+    dataset: 'cifar10'
+    model_type: 'wrn34-10'
+    optim_type: 'm-sgd'
+    total_epochs: 100
+    batch_size: 128
+    lr: 0.1
+    momentum: 0.9
+    weight_decay: 0.0005
+    scheduler:
+        - 55
+        - 70
+        - 75
     num_classes: 10
     lower: 0
     upper: 1

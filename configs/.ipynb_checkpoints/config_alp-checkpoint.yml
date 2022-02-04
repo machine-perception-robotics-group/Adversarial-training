@@ -1,7 +1,10 @@
-training:
+training_cifar10_resnet18:
     # training setting
+    # Dataset: CIFAR-10
+    # ResNet-18
     dataset: 'cifar10'
     model_type: 'resnet18'
+    optim_type: 'm-sgd'
     total_epochs: 200
     batch_size: 128
     lr: 0.1

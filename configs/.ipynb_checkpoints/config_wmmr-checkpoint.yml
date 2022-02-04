@@ -1,7 +1,8 @@
-training:
+training_cifar10_resnet18:
     # training setting
     dataset: 'cifar10'
     model_type: 'resnet18'
+    optim_type: 'adam'
     total_epochs: 100
     batch_size: 128
     lr: 0.01

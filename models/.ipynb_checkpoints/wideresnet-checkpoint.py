@@ -43,7 +43,7 @@ class NetworkBlock(nn.Module):
         return self.layer(x)
 
 class WideResNet(nn.Module):
-    def __init__(self, depth, num_classes, widen_factor=1, dropRate=0.0):
+    def __init__(self, depth, num_classes, widen_factor=1, dropRate=0.0, use_pc=False, is_train=True):
         super(WideResNet, self).__init__()
         nChannels = [16, 16*widen_factor, 32*widen_factor, 64*widen_factor]
         assert((depth - 4) % 6 == 0)
@@ -59,9 +59,17 @@ class WideResNet(nn.Module):
         # 3rd block
         self.block3 = NetworkBlock(n, nChannels[2], nChannels[3], block, 2, dropRate)
         # global average pooling and classifier
+        self.avgpool = nn.AvgPool2d(8)
         self.bn1 = nn.BatchNorm2d(nChannels[3])
         self.relu = nn.ReLU(inplace=True)
-        self.fc = nn.Linear(nChannels[3], num_classes)
+        
+        self.use_pc = use_pc
+        self.is_train = is_train
+        if self.use_pc:
+            self.fc1 = nn.Linear(nChannels[3], nChannels[3]//2)
+            self.fc2 = nn.Linear(nChannels[3]//2, num_classes)
+        else:
+            self.fc = nn.Linear(nChannels[3], num_classes)
         self.nChannels = nChannels[3]
 
         for m in self.modules():
@@ -79,9 +87,19 @@ class WideResNet(nn.Module):
         h = self.block2(h)
         h = self.block3(h)
         h = self.relu(self.bn1(h))
-        h = F.avg_pool2d(h, 8)
+        h = self.avgpool(h)
         h = h.view(-1, self.nChannels)
-        return self.fc(h)
+        
+        if self.use_pc:
+            h = self.fc1(h)
+            out = self.fc2(h)
+            if self.is_train:
+                return out, h
+            else:
+                return out
+        else:
+            h = self.fc(h)
+            return h
 
-def wrn34_10(num_classes=10):
-    return WideResNet(depth=34, num_classes=num_classes, widen_factor=10, dropRate=0.0)
+def wrn34_10(num_classes=10, use_pc=False, is_train=True):
+    return WideResNet(depth=34, num_classes=num_classes, widen_factor=10, dropRate=0.0, use_pc=use_pc, is_train=is_train)

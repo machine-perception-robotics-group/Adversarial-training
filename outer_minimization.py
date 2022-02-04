@@ -157,8 +157,8 @@ class Outer_minimize_selector:
                 probs = torch.softmax(logits, dim=1)
                 
             wrong_probs = probs[class_index!=targets[:,None]].view(x_adv.size(0), self.num_classes-1)
-            correct_probs = probs[class_index==targets[:,None]]
-            top2_probs = torch.topk(wrong_probs, k=1)[0]
+            correct_probs = probs[class_index==targets[:,None]].unsqueeze(1)
+            top2_probs = torch.topk(wrong_probs, k=1).values
             pm = correct_probs - top2_probs
             s = self.sigmoid(-self.gamma*(pm - self.beta))
             s = s/torch.sum(s)
@@ -198,8 +198,8 @@ class Outer_minimize_selector:
         
         class_index = torch.arange(self.num_classes)[None,:].repeat(x_adv.size(0),1).cuda()
         wrong_probs = logits.softmax(dim=1)[class_index!=targets[:,None]].view(x_adv.size(0), self.num_classes-1)
-        correct_probs = logits.softmax(dim=1)[class_index==targets[:,None]]
-        top2_probs = torch.topk(wrong_probs, k=1)[0]
+        correct_probs = logits.softmax(dim=1)[class_index==targets[:,None]].unsqueeze(1)
+        top2_probs = torch.topk(wrong_probs, k=1, dim=1).values
         s = torch.exp(-self.tau*(correct_probs - top2_probs))
         loss = torch.sum(-s*torch.log_softmax(logits, dim=1)[class_index==targets[:,None]])/x_adv.size(0)
         

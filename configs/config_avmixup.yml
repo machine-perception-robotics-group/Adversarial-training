@@ -1,7 +1,8 @@
-training:
+training_cifar10_wrn34-10:
     # training setting
     dataset: 'cifar10'
     model_type: 'wrn34-10'
+    optim_type: 'm-sgd'
     total_epochs: 200
     batch_size: 128
     lr: 0.1

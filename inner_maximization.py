@@ -77,8 +77,8 @@ class Inner_maximize_selector:
             logits = model(x)
             probs = torch.softmax(logits, dim=1)
             wrong_probs = probs[class_index!=targets[:,None]].view(x.size(0),self.num_classes-1)
-            correct_probs = probs[class_index==targets[:,None]]
-            top2_probs = torch.topk(wrong_probs, k=1)[0]
+            correct_probs = probs[class_index==targets[:,None]].unsqueeze(1)
+            top2_probs = torch.topk(wrong_probs, k=1).values
             margin = correct_probs - top2_probs
             s = torch.exp(-self.tau*margin)
             

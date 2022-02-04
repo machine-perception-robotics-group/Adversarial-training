@@ -2,6 +2,7 @@ training:
     # training setting
     dataset: 'cifar10'
     model_type: 'resnet18'
+    optim_type: 'm-sgd'
     total_epochs: 100
     batch_size: 128
     lr: 0.1
