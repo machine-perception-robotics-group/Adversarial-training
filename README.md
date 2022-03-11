@@ -10,7 +10,7 @@ We list available architectures bellow:
 |LeNet|5|
 |RBF CNNs|3-convs + 1-fc|
 
-* To Do: We will increase the avarable base network including state-of-the-art method.
+* To Do: We will increase the available base network including state-of-the-art method.
 
 ## Defense methods
 We prepare several type of the adversarial training, but most of methods basically defense, which is conscious the decision bounday, on this repo..
