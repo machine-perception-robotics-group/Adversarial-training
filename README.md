@@ -1,6 +1,6 @@
 # Adversarial training
 This repo. includes several adversarial training (AT) methods and some network architectures are avarable.
-We list avarable architectures bellow:
+We list available architectures bellow:
 
 |network|# of layers|
 | :---: | :---: |
