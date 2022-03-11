@@ -1,5 +1,5 @@
 # Adversarial training
-This repo. includes several adversarial training (AT) methods and some network architectures are avarable.
+This repo. includes several adversarial training (AT) methods and some network architectures are available.
 We list available architectures bellow:
 
 |network|# of layers|
